@@ -82,18 +82,20 @@ const previewImage=(item, setPreviewSrc, onPreview)=>{
 };
 
 const handleUploadImage= async (list,action,uploadImage,setUploadLoading, setUploadErrorFileName)=>{
-    setUploadLoading(true);
     const input = document.getElementById('upload-image');
     const targetFile = input.files[0];
-    const targetFileName = targetFile.name;
-    const imageBase64 = await getBase64(targetFile);
-    await axios.post(action, {imageBase64, name: targetFileName})
-        .then(()=>{
-            uploadImage(action+"/"+targetFileName);
-        }).catch(() => {
-            setUploadErrorFileName(targetFileName);
-        });
-    setUploadLoading(false);
+    if (targetFile){
+        setUploadLoading(true);
+        const { name } = targetFile;
+        const imageBase64 = await getBase64(targetFile);
+        await axios.post(action, {imageBase64, name})
+            .then(()=>{
+                uploadImage(action + "/" + name);
+            }).catch(() => {
+                setUploadErrorFileName(name);
+            });
+        setUploadLoading(false);
+    }
 };
 
 const getBase64 = (file) => {

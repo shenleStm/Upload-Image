@@ -1,9 +1,13 @@
-import React,{useState} from 'react';
+import React,{useState, useEffect} from 'react';
 import UploadImage from "./component/upload-image/upload-image";
 import axios from "axios";
 import {message} from "antd";
 
-const addImageUrl = 'http://localhost:8080/image/add';
+const baseUrl = 'http://localhost:8080/image';
+
+const getImageListUrl = `${baseUrl}/list`;
+const addImageUrl = `${baseUrl}/add`;
+const deleteImageUrl = `${baseUrl}/delete`;
 
 const ajax = (url, data={}, type='GET') =>{
     return new Promise((resolve)=>{
@@ -17,18 +21,18 @@ const ajax = (url, data={}, type='GET') =>{
     })
 };
 
-const getImageList = async(setList)=>{
-    const data = await ajax('http://localhost:8080/image/list');
+const getAndUpdateImageList = async(setList) => {
+    const data = await ajax(getImageListUrl);
     setList(data.data);
 };
 
 const deleteImage = async ({name}, setList)=>{
-    await ajax('http://localhost:8080/image/delete',{name});
-    getImageList(setList);
+    await ajax(deleteImageUrl,{name});
+    getAndUpdateImageList(setList);
 };
 
-const uploadImage = (item) => {
-    console.log('uploadImage', item)
+const uploadImage = (item, setList) => {
+    getAndUpdateImageList(setList);
 };
 
 const downloadImage = (item) => {
@@ -37,13 +41,17 @@ const downloadImage = (item) => {
 
 function App() {
     const [list, setList] = useState([]);
-    getImageList(setList);
+
+    useEffect(() => {
+        getAndUpdateImageList(setList);
+    },[]);
+
     return (
       <div className="App">
         <UploadImage
             action={addImageUrl}
             list={list}
-            onUpload={(item)=>uploadImage(item)}
+            onUpload={(item)=>uploadImage(item, setList)}
             onDelete={(item)=>deleteImage(item, setList)}
             onDownload={(item)=>downloadImage(item)}
         />
